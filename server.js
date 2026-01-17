@@ -20,7 +20,7 @@ app.post('/reservations', (req, res) => {
 
   const start = new Date(startTime);
   const end = new Date(endTime);
-  const now = new Date();
+
 
     // input-päivämäärän tarkistus
   if (isNaN(start.getTime()) || isNaN(end.getTime())) 
@@ -28,6 +28,11 @@ app.post('/reservations', (req, res) => {
         error: 'alkuaika tai loppuaika ei ole kelvollisia'
     });
 
+    // Normalisoi UTC-aikaan ennen kantaan kirjoitusta
+    const startIso = start.toISOString();
+    const endIso = end.toISOString();   
+    const now = new Date();
+    
   // Tarkista että alkuaika on ennen loppuaikaa
   if (start >= end) {
     return res.status(400).json({ 
@@ -64,8 +69,8 @@ app.post('/reservations', (req, res) => {
     id: id++,
     roomId,
     roomTitle,
-    startTime,
-    endTime,
+    startTime: startIso,
+    endTime: endIso,
     userName
   };
 
