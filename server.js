@@ -22,12 +22,19 @@ app.post('/reservations', (req, res) => {
   const end = new Date(endTime);
   const now = new Date();
 
+    // input-päivämäärän tarkistus
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) 
+    return res.status(400).json({
+        error: 'alkuaika tai loppuaika ei ole kelvollisia'
+    });
+
   // Tarkista että alkuaika on ennen loppuaikaa
   if (start >= end) {
     return res.status(400).json({ 
       error: 'Alkuajan täytyy olla ennen loppuaikaa' 
     });
   }
+
 
   // Tarkista että varaus ei ole menneisyydessä
   if (start < now) {
