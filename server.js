@@ -37,13 +37,13 @@ app.post('/reservations', (req, res) => {
   }
 
   // Tarkista päällekkäisyydet
-  const hasConflict = reservations.some(r => {
-    if (r.roomId !== roomId) return false;
+  const hasConflict = reservations.some(current => {
+    if (current.roomId !== roomId) return false;
     
-    const rStart = new Date(r.startTime);
-    const rEnd = new Date(r.endTime);
+    const currentStart = new Date(current.startTime);
+    const currentEnd = new Date(current.endTime);
     
-    return (start < rEnd && end > rStart);
+    return (start < currentEnd && end > currentStart);
   });
 
   if (hasConflict) {
