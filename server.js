@@ -5,9 +5,9 @@ app.use(express.json());
 
 // In-memory tietokanta
 const reservations = [];
-let nextId = 1;
+let id = 1;
 
-// POST /reservations - Luo uusi varaus
+// POST /reservations - Luo uusi varaus, käytä aina UTC-0 aikaa
 app.post('/reservations', (req, res) => {
   const { roomId, roomTitle, startTime, endTime, userName } = req.body;
 
@@ -61,7 +61,7 @@ app.post('/reservations', (req, res) => {
 
   // Luo varaus
   const reservation = {
-    id: nextId++,
+    id: id++,
     roomId,
     roomTitle,
     startTime,
