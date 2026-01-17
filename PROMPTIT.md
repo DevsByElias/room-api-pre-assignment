@@ -54,3 +54,64 @@ Vastaus sisältää nyt myös `roomTitle`-kentän:
   "userName": "Matti"
 }
 ```
+
+Lisäsin koodiin virheellisen päivämäärän tarkistuksen. Koodi on seuraava: 
+
+```javascript
+  // input-päivämäärän tarkistus
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) 
+    return res.status(400).json({
+        error: 'alkuaika tai loppuaika ei ole kelvollisia'
+    });
+```
+
+debugasin validointia bashilla, mutta varaus menee kuitenkin läpi startTimen ollessa väärä. Onko koodin pätkä sijoitettu väärän kohtaan? curl -i -X POST http://localhost:3000/reservations   -H "Content-Type: application/json"   -d '{
+    "roomId": "101",
+    "roomTitle": "Neuvotteluhuone",
+    "startTime": "asdasdasd",
+    "endTime": "2026-01-10T11:00:00Z",
+    "userName": "Matti Meikäläinen"
+  }' curl http://localhost:3000/rooms/101/reservations
+
+
+Koodin sijainti vaikuttaa oikealta! Ongelma on todennäköisesti siinä, että JavaScript `new Date()` on liian salliva – se voi palauttaa "Invalid Date" -objektin, joka ei välttämättä aiheuta `NaN`:ia `getTime()`-kutsulla kaikissa tapauksissa.
+
+Kokeilin koodiasi, ja huomasin että validointi pitäisi toimia. Tarkistetaan muutama asia:
+
+1. **Onko validointi oikeassa kohdassa?** Sen pitäisi olla heti `new Date()` -kutsujen jälkeen, ennen muita tarkistuksia:
+
+```javascript
+const start = new Date(startTime);
+const end = new Date(endTime);
+
+// input-päivämäärän tarkistus
+if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+  return res.status(400).json({
+    error: 'alkuaika tai loppuaika ei ole kelvollisia'
+  });
+}
+
+const now = new Date();
+// ... loput tarkistukset
+```
+
+2. **Testaa validointia suoraan:**
+
+```bash
+# Tämän pitäisi antaa virhe
+curl -i -X POST http://localhost:3000/reservations \
+  -H "Content-Type: application/json" \
+  -d '{
+    "roomId": "101",
+    "roomTitle": "Neuvotteluhuone",
+    "startTime": "asdasdasd",
+    "endTime": "2026-01-10T11:00:00Z",
+    "userName": "Matti"
+  }'
+```
+
+Jos varaus menee silti läpi, tarkista:
+- Oletko käynnistänyt palvelimen uudelleen muutosten jälkeen?
+- Onko validointi varmasti POST-endpointin sisällä oikeassa kohdassa?
+
+Voisitko näyttää koko POST-endpointtisi koodi, niin voin tarkistaa missä järjestyksessä validoinnit ovat?
