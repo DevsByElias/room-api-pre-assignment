@@ -1,15 +1,19 @@
 const express = require('express');
 const app = express();
 
+
 app.use(express.json());
 
 // In-memory tietokanta
 const reservations = [];
 let id = 1;
 
-// POST /reservations - Luo uusi varaus, käytä aina UTC-0 aikaa
+// POST /reservations - Luo uusi varaus, käytä UTC-0 aikaa
 app.post('/reservations', (req, res) => {
   const { roomId, roomTitle, startTime, endTime, userName } = req.body;
+
+  // Tyyppimuunnos
+  const roomIdValue = String(roomId);
 
   // Validoi että kaikki kentät on annettu
   if (!roomId || !roomTitle || !startTime || !endTime || !userName) {
@@ -50,7 +54,7 @@ app.post('/reservations', (req, res) => {
 
   // Tarkista päällekkäisyydet
   const hasConflict = reservations.some(current => {
-    if (current.roomId !== roomId) return false;
+    if (current.roomId !== roomIdValue) return false;
     
     const currentStart = new Date(current.startTime);
     const currentEnd = new Date(current.endTime);
@@ -67,7 +71,7 @@ app.post('/reservations', (req, res) => {
   // Luo varaus
   const reservation = {
     id: id++,
-    roomId,
+    roomId: roomIdValue,
     roomTitle,
     startTime: startIso,
     endTime: endIso,
@@ -93,9 +97,9 @@ app.delete('/reservations/:id', (req, res) => {
 
 // GET /rooms/:roomId/reservations - Listaa huoneen varaukset
 app.get('/rooms/:roomId/reservations', (req, res) => {
-  const { roomId } = req.params;
-  const roomReservations = reservations.filter(r => r.roomId === roomId);
-  
+  const roomIdValue = String(req.params.roomId);
+  const roomReservations = 
+  reservations.filter(r => r.roomId === roomIdValue);
   // Järjestä alkuajan mukaan
   roomReservations.sort((a, b) => 
     new Date(a.startTime) - new Date(b.startTime)
@@ -104,6 +108,7 @@ app.get('/rooms/:roomId/reservations', (req, res) => {
   res.json(roomReservations);
 });
 
+// Palvelimen käynnistys
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`API käynnissä portissa ${PORT}`);
