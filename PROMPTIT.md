@@ -212,3 +212,44 @@ app.post('/reservations', (req, res) => {
 - ✅ Frontend voi näyttää päivämäärät käyttäjän paikallisessa ajassa
 
 Haluatko, että päivitän artifaktin tällä paremmalla normalisaatiolla?
+
+## Chat5
+Koodissa tuo roomId sekoittaa hieman minua. Haluaisin sen samaan muotoon kaikkialle.  Luultavasti se pitäisi toteuttaa tyyppimuunnoksena stringiksi ja nimi voisi olla esim. roomIdValue. Olisiko tuo ns. javascriptissä best practise tässä kohtaa?
+
+Hyvä huomio! JavaScriptissä on todella tärkeää olla johdonmukainen muuttujien nimeämisen kanssa. Katsotaan tilannetta:
+
+**Nykyinen tilanne:**
+- `roomId` tulee request bodystä (todennäköisesti string)
+- `:roomId` URL-parametrina (aina string)
+- Käytetään suoraan ilman tyyppimuunnosta
+
+**Ongelma:**
+- Epäselvää onko `roomId` string vai numero
+- Voi aiheuttaa vertailuongelmia (`"101" !== 101`)
+
+**JavaScript best practices tähän:**
+
+**Vaihtoehto 1: Pidä kaikki stringeinä** (Suosittelen tähän projektiin)
+```javascript
+// Yksinkertaisinta - roomId on aina string
+const { roomId } = req.body; // string
+// Ei tarvetta muuttujanimelle roomIdValue
+```
+
+**Vaihtoehto 2: Eksplisiittinen nimeäminen** (Jos haluat tehdä erottelun selvemmäksi)
+```javascript
+const roomIdValue = String(roomId); // Eksplisiittinen muunnos
+```
+
+**Best practice tässä kontekstissa:**
+
+Koska roomId on **tunniste** (identifier), ei **numero** (numeric value), sen **pitäisi olla string**. Huoneen numero "101" on semanttisesti string, vaikka näyttääkin numerolta.
+
+Nimi `roomIdValue` ei ole vakiintunut JavaScript-käytäntö. Parempia vaihtoehtoja:
+- `roomId` (yksinkertaisin - pidä alkuperäinen)
+- `roomIdStr` (jos haluat korostaa että on string)
+- Lisää JSDoc-kommentti: `/** @type {string} */`
+
+**Suositukseni:** Pidä nimi `roomId` ja varmista että se on aina string. Ei tarvetta `roomIdValue`-nimelle, koska se ei ole vakiintunut käytäntö JavaScriptissä ja tekee koodista monimutkaisemman ilman selvää hyötyä.
+
+Haluatko pitää nykyisen `roomId`-nimen vai haluatko jotain muuta ratkaisua?
