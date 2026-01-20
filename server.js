@@ -6,7 +6,7 @@ app.use(express.json());
 
 // In-memory tietokanta
 const reservations = [];
-let id = 1;
+let nextReservationId = 1;
 
 // POST /reservations - Luo uusi varaus, käytä UTC-0 aikaa
 app.post('/reservations', (req, res) => {
@@ -70,7 +70,7 @@ app.post('/reservations', (req, res) => {
 
   // Luo varaus
   const reservation = {
-    id: id++,
+    id: nextReservationId++,
     roomId: roomIdValue,
     roomTitle,
     startTime: startIso,
@@ -84,8 +84,8 @@ app.post('/reservations', (req, res) => {
 
 // DELETE /reservations/:id - Peru varaus
 app.delete('/reservations/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const index = reservations.findIndex(r => r.id === id);
+  const reservationId = parseInt(req.params.id);
+  const index = reservations.findIndex(r => r.id === reservationId);
 
   if (index === -1) {
     return res.status(404).json({ error: 'Varausta ei löytynyt' });
